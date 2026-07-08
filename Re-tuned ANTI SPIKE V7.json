@@ -1,0 +1,150 @@
+{
+  // Telemetry Off
+  "FFlagOpenTelemetryEnabled2": false,
+  "FFlagEnableTelemetryService1": false,
+  "FFlagPerfDataOnTelemetryV2": false,
+  "FFlagSendRenderFidelityTelemetry2": false,
+  "FFlagReportTextureStreamingTelemetry2": false,
+  "DFFlagCoreScriptTelemetry2": false,
+  "DFFlagHttpCachePerfTelemetry": false,
+  "DFIntTelemetryProfilerHundredthsPercentage": 0,
+  "FIntTelemetryProfilerFrequency": 0,
+  "FIntPerformanceTelemetryQueueProcessLimit": 0,
+
+  // GPU / Rendering - Enhanced
+  "FFlagFineGrainCull": true,
+  "FFlagFastGPULightCulling3": true,
+  "FFlagSmoothClusterOcclusionCulling2": true,
+  "FFlagSmoothClusterGrassOcclusionCulling": true,
+  "DFFlagRenderEmitterOcclusionCulling": true,
+  "DFFlagRenderFastClusterOcclusionCulling": true,
+  "DFFlagRenderModelClusterOcclusionCulling": true,
+  "DFFlagFixSpecialMeshCulling": true,
+  "FFlagRenderTestEnableDistanceCulling": true,
+  "FFlagRenderAllocateShadowMapResourcesOnDemand": true,
+  "FFlagRenderInitShadowmaps": true,
+  "FFlagRenderFixBrokenAvatarShadow": true,
+  "DFFlagDynamicTranslationShadowModeEnabled": false,
+  "FIntRenderMaxShadowAtlasUsageBeforeDownscale": 70,
+  "FIntRenderShadowMapDepthCacheMemLimit": 192,
+  
+  // [NEW] Advanced Texture Streaming
+  "FFlagRenderPreloadTexturesInBatches": true,
+  "DFIntTextureStreamingMemoryBudgetMB": 512,
+
+  // CPU / Threading - Optimized
+  "FFlagTaskSchedulerLimitTargetFpsTo2402": true,
+  "DFFlagTaskSchedulerRescheduleAsForeground": true,
+  "DFFlagTaskSchedulerBlockingShutdownInClients": false,
+  "FIntTaskSchedulerMaxNumOfJobs": 85,
+  "FIntTaskSchedulerMaxStackSizeBytes": 524288,
+  "FIntTaskSchedulerMaxTempArenaSizeBytes": 1048576,
+  "FIntVideoSchedulerMaxTaskSize": 300,
+  "FFlagTaskThreadUsesRuntime2": true,
+  "FFlagBaseThreadPoolUseRuntime2": true,
+  "DFFlagProcess2DPipelineUseRuntimeThreading": true,
+  "FFlagUseRuntimeMutexSchedulerFacet": true,
+  "FIntTaskSchedulerAutoThreadLimit": 6,
+  "FIntTaskSchedulerThreadMin": 1,
+  "FIntTaskSchedulerAsyncTasksMinimumThreadCount": 2,
+  "FIntOcclusionWorkerThreadCount": 5,
+  
+  // [NEW] Smart Thread Management
+  "FFlagDynamicThreadAllocation": true,
+
+  // Cache / Memory - Balanced
+  "FFlagStyleCacheLessMemory2": true,
+  "FFlagReduceStyleCacheAllocations": true,
+  "FFlagAnimationClipMemCacheEnabled": true,
+  "FFlagAnimationCurveDenseCacheEnabled6": true,
+  "FFlagCacheTextBoundsInGuiText": true,
+  "FFlagRbxStorageUseMemCache": true,
+  "FFlagHttpCacheEntryUseMmap": true,
+  "FFlagHttpCacheCleanSpaceOnly": true,
+  "FFlagClearCacheableContentProviderOnGameLaunch": true,
+  "FFlagCacheableContentProviderFixRccMsg": true,
+  "FFlagAssetProviderAssetCacheUseRBXStorageImpl2": true,
+  "FFlagAssetProviderRedirectCacheUseRBXStorageImpl2": true,
+  "FFlagUnifiedMeshCacheSizeComputation": true,
+  "FFlagAdaptiveMeshCacheSizeForAndroid": true,
+  "FFlagStreamingSolverV2FlagCache": true,
+  "DFFlagAlwaysSkipDiskCache": true,
+  "DFFlagEnableConcurrentHttpClientCacheReads": true,
+  "DFFlagSkipReadDiskCacheRedirects": true,
+  "DFFlagPhysicsMechanismCacheOptimizeAlloc": true,
+  "DFIntMemCacheMaxCapacityMB": 64,
+  "DFIntBackupCacheToKeep": 4,
+  "DFIntHttpCacheCleanTriggerAvailableSpaceMiB": 512,
+  "DFIntHttpCacheCleanTriggerTotalSpaceMiB": 1536,
+  "FIntRbxStorageDeleteOldCacheMB": 10,
+  "FIntSQLiteCacheSizePages": 4096,
+  "FIntAudioMetadataCacheSizeKB": 256,
+  "DFIntSoundServiceCacheCleanupMaxAgeDays": 2,
+  "DFIntHttpCurlConnectionCacheSize": -1,
+  "FIntHttpCurlMaxCachedHandlesPerHost": 8,
+  
+  // [NEW] Smart Memory Management
+  "FFlagSmartGarbageCollection": true,
+  "DFIntGcCollectStepSize": 256,
+
+  // Network / Hybrid Stability
+  "DFIntClientPacketExcessMicroseconds": 1500,
+  "DFIntClientPacketHealthyAllocationPercent": 25,
+  "DFIntClientPacketMaxDelayMs": 1,
+  "DFIntClientPacketMaxFrameMicroseconds": 200,
+  "DFIntClientPacketMinMicroseconds": 1,
+  "DFIntLargePacketQueueSizeCutoffMB": 768,
+  "DFIntMaxProcessPacketsJobScaling": 2000000,
+  "DFIntMaxProcessPacketsStepsAccumulated": 5,
+  "DFIntMaxProcessPacketsStepsPerCyclic": 4000,
+  "DFIntMaxWaitTimeBeforeForcePacketProcessMS": 1,
+  "DFIntNetworkStopProducingPacketsToProcessThresholdMs": 0,
+  "FFlagSpecifyNetworkReplicatorScope": true,
+  "FFlagSpecifyNetworkReplicatorScopeForItems": true,
+  "DFFlagRakNetEnablePoll": true,
+  "DFFlagSampleAndRefreshRakPing": true,
+  "DFIntRakNetLoopMs": 1,
+  "DFIntRakNetMinAckGrowthPercent": 1,
+  "DFIntRakNetNakResendDelayMs": 1,
+  "DFIntRakNetResendRttMultiple": 2,
+  "DFIntRakNetSelectTimeoutMs": 1,
+  "DFIntSignalRCoreKeepAlivePingPeriodMs": 300,
+  "DFIntSignalRCoreRpcQueueSize": 256,
+  "DFIntSignalRCoreServerTimeoutMs": 12000,
+  "DFIntSignalRCoreTimerMs": 800,
+  "DFIntSignalRHubConnectionBaseRetryTimeMs": 150,
+  "DFIntSignalRHubConnectionHeartbeatTimerRateMs": 1000,
+  "DFIntRakNetMtuValue1InBytes": 1280,
+  "DFIntRakNetMtuValue2InBytes": 1280,
+  "DFIntRakNetMtuValue3InBytes": 1280,
+  "DFIntConnectionMTUSize": 1280,
+  
+  // [NEW] Network Compression
+  "FFlagNetworkCompressionEnabled": true,
+  "DFIntNetworkCompressionLevel": 1,
+
+  // [NEW] Audio Optimization
+  "FFlagAudioUseNewMemoryPool": true,
+  "DFIntAudioMemoryPoolSizeMB": 32,
+  "FFlagAudioEnableVoiceChatOptimizations": true,
+
+  // [NEW] Advanced Physics
+  "FFlagPhysicsSteppedSimulation": true,
+  "DFIntPhysicsMaxThreads": 4,
+  "DFFlagPhysicsUseParallelBroadphase": true,
+
+  // [NEW] UI Rendering Performance
+  "FFlagGuiUseFastTextRendering": true,
+  "FFlagGuiBatchRenderItems": true,
+  "DFIntGuiMaxBatchSize": 100,
+
+  // [NEW] Streaming & Loading
+  "FFlagContentProviderPreloadAssets": true,
+  "DFIntContentProviderPreloadBatchSize": 8,
+  "FFlagAsyncAssetLoading": true,
+
+  // [NEW] Dynamic Quality Scaling
+  "FFlagDynamicGraphicsQuality": true,
+  "DFIntGraphicsQualityMinFpsThreshold": 45,
+  "DFIntGraphicsQualityMaxFpsTarget": 60
+}
