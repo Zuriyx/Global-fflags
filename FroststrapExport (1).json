@@ -1,0 +1,11 @@
+{
+    "DFIntTaskSchedulerTargetFps": "99999999999999999999",
+    "DFIntMaxAverageFrameDelayExceedFactor": "2",
+    "DFIntTargetTimeDelayFacctorTenths": "10",
+    "DFIntMaxFrameBufferSize": "4",
+    "FFlagTaskSchedulerLimitTargetFpsTo2402": "False",
+    "FFlagHandleAltEnterFullscreenManually": "False",
+    "FFlagGameBasicSettingsFramerateCap5": "False",
+
+    "FIntInterpolationAwareTargetTimeLerpHundredth": "20"
+}

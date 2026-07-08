@@ -1,0 +1,18 @@
+{
+  "DFIntTaskSchedulerTargetFps": "1000",
+  "FFlagOptimizeNetworkTransport": "true",
+  "FFlagOptimizeNetworkRouting": "true",
+  "FFlagOptimizeNetwork": "true",
+  "FFlagDebugDisableParticles": "True",
+  "FFlagDebugDisableGuiEffects": "True",
+  "FFlagDebugDisableLODFoliage": "True",
+  "FFlagDebugForceLowGraphics": "True",
+  "FFlagDebugDisableMaterialSpecular": "True",
+  "FFlagDebugDisableLightingTechnologyFeatures": "True",
+  "FFlagDebugDisableRenderingPostEffects": "True",
+  "FFlagDebugForceDisableShadows": "True",
+  "FFlagRenderEnableGlobalInstancingD3D10": "True",
+  "FFlagRenderFixFog": "True",
+  "FFlagRenderTestEnableDistanceCulling": "True",
+  "DFIntDebugFRMQualityLevelOverride": "1"
+}
