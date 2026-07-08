@@ -1,0 +1,6 @@
+🛠 How to Adjust (IMPORTANT)
+
+If it over-rotates or under-rotates, adjust these values:
+
+MouseMove, -85, 0  ; decrease to -70 if too fast
+MouseMove, 85, 0   ; increase to 95 if too slow
