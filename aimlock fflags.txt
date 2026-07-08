@@ -1,0 +1,1675 @@
+local uiLibrary = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local mainWindow = uiLibrary:CreateWindow({
+    Name = "Aimlock + SemiFFlags | Made by Merebennie",
+    LoadingTitle = "Aimlock + SemiFFlags | Made by Merebennie Initializing...",
+    LoadingSubtitle = "by Merebennie",
+    ConfigurationSaving = {
+        Enabled = false
+    },
+    Discord = {
+        Enabled = false
+    },
+    KeySystem = false
+})
+
+local mainTab = mainWindow:CreateTab("Main", 4483362458)
+local optimizationTab = mainWindow:CreateTab("Optimization", 4483362458)
+optimizationTab:CreateSection("Performance Enhancer")
+
+local runService = game:GetService("RunService")
+local workspaceService = game:GetService("Workspace")
+
+local stretchWidthScale = 0.92
+local stretchHeightScale = 0.58
+
+if getgenv().StretchScreen and type(getgenv().StretchScreen.disable) == "function" then
+    pcall(function()
+        getgenv().StretchScreen.disable()
+    end)
+end
+
+local stretchConnection = nil
+local stretchEnabled = false
+
+local stretchCFrameOffset = (function(widthScale, heightScale)
+    return CFrame.new(0, 0, 0, widthScale, 0, 0, 0, heightScale, 0, 0, 0, 1)
+end)(stretchWidthScale, stretchHeightScale)
+
+local function applyStretchToCamera()
+    local currentCamera = workspaceService.CurrentCamera
+    if currentCamera then
+        pcall(function()
+            currentCamera.CFrame = currentCamera.CFrame * stretchCFrameOffset
+        end)
+    end
+end
+
+local function enableStretchScreen()
+    if not stretchEnabled then
+        stretchEnabled = true
+        stretchConnection = runService.RenderStepped:Connect(function()
+            if workspaceService.CurrentCamera then
+                applyStretchToCamera()
+            end
+        end)
+    end
+end
+
+local function disableStretchScreen()
+    if stretchEnabled then
+        stretchEnabled = false
+        if stretchConnection and stretchConnection.Connected then
+            pcall(function()
+                stretchConnection:Disconnect()
+            end)
+        end
+        stretchConnection = nil
+    end
+end
+
+local function toggleStretchScreen()
+    if stretchEnabled then
+        disableStretchScreen()
+    else
+        enableStretchScreen()
+    end
+end
+
+getgenv().StretchScreen = getgenv().StretchScreen or {}
+getgenv().StretchScreen.enable = enableStretchScreen
+getgenv().StretchScreen.disable = disableStretchScreen
+getgenv().StretchScreen.toggle = toggleStretchScreen
+getgenv().StretchScreen.isEnabled = function()
+    return stretchEnabled
+end
+
+getgenv().StretchScreen._internal = {
+    widthScale = stretchWidthScale,
+    heightScale = stretchHeightScale
+}
+
+optimizationTab:CreateButton({
+    Name = "Faster Dash + Better Hitbox Accuracy",
+    Callback = function()
+        uiLibrary:Notify({
+            Title = "Merebennie Hub",
+            Content = "Activating FFlags...",
+            Duration = 3
+        })
+
+        pcall(function()
+            setfflag("S2PhysicsSenderRate", "15000")
+        end)
+
+        task.wait(0.1)
+
+        pcall(function()
+            setfflag("PhysicsSenderMaxBandwidthBps", "20000")
+        end)
+
+        task.wait(0.1)
+
+        uiLibrary:Notify({
+            Title = "Success!",
+            Content = "FFlags Applied Successfully ♥",
+            Duration = 3
+        })
+    end
+})
+
+optimizationTab:CreateButton({
+    Name = "Disable Shakes",
+    Callback = function()
+        uiLibrary:Notify({
+            Title = "Merebennie Hub",
+            Content = "Disabling shakes and setting up auto reapply...",
+            Duration = 3
+        })
+
+        local localPlayer = game:GetService("Players").LocalPlayer
+
+        local function disableCharacterShake()
+            pcall(function()
+                local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+                if character then
+                    local success, characterClient = pcall(function()
+                        return character:WaitForChild("CharacterHandler", 5):WaitForChild("Client", 5)
+                    end)
+
+                    if success and characterClient then
+                        local clientEnv = getsenv(characterClient)
+                        if clientEnv and clientEnv.shared and clientEnv.shared.addshake then
+                            pcall(function()
+                                hookfunction(clientEnv.shared.addshake, function()
+                                    return nil
+                                end)
+                            end)
+                        end
+                    end
+                end
+            end)
+        end
+
+        disableCharacterShake()
+
+        if not _G.__Merebennie_ShakeHook_Connected then
+            _G.__Merebennie_ShakeHook_Connected = true
+
+            localPlayer.CharacterAdded:Connect(function()
+                task.wait(0.8)
+                disableCharacterShake()
+            end)
+        end
+
+        uiLibrary:Notify({
+            Title = "Success",
+            Content = "Shakes disabled (will persist after respawn).",
+            Duration = 4
+        })
+    end
+})
+
+optimizationTab:CreateButton({
+    Name = "Fps Booster + Better lighting",
+    Callback = function()
+        uiLibrary:Notify({
+            Title = "Merebennie Hub",
+            Content = "Applying FPS Booster + Gray lighting...",
+            Duration = 3
+        })
+
+        pcall(function()
+            local playersService = game:GetService("Players")
+            local lightingService = game:GetService("Lighting")
+            local workspaceRef = game:GetService("Workspace")
+            game:GetService("RunService")
+
+            local autoApplyBooster = true
+            local grayColor = Color3.fromRGB(140, 140, 140)
+            local useFog = true
+            local fogStart = 0
+            local fogEnd = 1000000
+            local removeTextures = false
+            local revertEnvironmentOnRestore = true
+            local hideLocalPlayerHead = true
+
+            local localPlayer = playersService.LocalPlayer
+
+            if not localPlayer then
+                for _ = 1, 20 do
+                    task.wait(0.03)
+                    localPlayer = playersService.LocalPlayer or localPlayer
+                    if localPlayer then
+                        break
+                    end
+                end
+            end
+
+            local environmentBackup = {
+                lighting = {},
+                postEffects = {},
+                particles = {},
+                trails = {},
+                beams = {},
+                lights = {},
+                decals = {},
+                skies = {},
+                atmospheres = {},
+                createdSky = nil,
+                createdAtmosphere = nil,
+                playerVisuals = {},
+                removedInstances = {}
+            }
+
+            local function safeGet(propertyFunction, ...)
+                local success, value = pcall(propertyFunction, ...)
+                if success then
+                    return value
+                end
+                return nil
+            end
+
+            local function saveCurrentLighting()
+                local lighting = lightingService
+
+                environmentBackup.lighting.Ambient = safeGet(function()
+                    return lighting.Ambient
+                end)
+
+                environmentBackup.lighting.OutdoorAmbient = safeGet(function()
+                    return lighting.OutdoorAmbient
+                end)
+
+                environmentBackup.lighting.FogColor = safeGet(function()
+                    return lighting.FogColor
+                end)
+
+                environmentBackup.lighting.FogStart = safeGet(function()
+                    return lighting.FogStart
+                end)
+
+                environmentBackup.lighting.FogEnd = safeGet(function()
+                    return lighting.FogEnd
+                end)
+
+                environmentBackup.lighting.GlobalShadows = safeGet(function()
+                    return lighting.GlobalShadows
+                end)
+
+                environmentBackup.lighting.Brightness = safeGet(function()
+                    return lighting.Brightness
+                end)
+
+                environmentBackup.lighting.ColorShiftTop = safeGet(function()
+                    return lighting.ColorShift_Top
+                end)
+
+                environmentBackup.lighting.ColorShiftBottom = safeGet(function()
+                    return lighting.ColorShift_Bottom
+                end)
+
+                environmentBackup.lighting.ClockTime = safeGet(function()
+                    return lighting.ClockTime
+                end)
+            end
+
+            local function applyGrayLighting()
+                saveCurrentLighting()
+
+                safeGet(function()
+                    lightingService.Ambient = grayColor
+                end)
+
+                safeGet(function()
+                    lightingService.OutdoorAmbient = grayColor
+                end)
+
+                if useFog then
+                    safeGet(function()
+                        lightingService.FogColor = grayColor
+                        lightingService.FogStart = fogStart
+                        lightingService.FogEnd = fogEnd
+                    end)
+                end
+
+                safeGet(function()
+                    lightingService.GlobalShadows = false
+                end)
+
+                pcall(function()
+                    lightingService.ColorShift_Top = grayColor
+                end)
+
+                pcall(function()
+                    lightingService.ColorShift_Bottom = grayColor
+                end)
+
+                pcall(function()
+                    lightingService.Brightness = 1
+                end)
+            end
+
+            local function removeExistingSkiesAndAtmospheres()
+                local lighting = lightingService
+
+                for _, child in ipairs(lighting:GetChildren()) do
+                    if child:IsA("Sky") then
+                        local success, cloned = pcall(function()
+                            return child:Clone()
+                        end)
+                        if success and cloned then
+                            table.insert(environmentBackup.skies, cloned)
+                        end
+                        pcall(function()
+                            child:Destroy()
+                        end)
+                    end
+                end
+
+                for _, descendant in ipairs(workspaceRef:GetDescendants()) do
+                    if descendant:IsA("Sky") then
+                        local success, cloned = pcall(function()
+                            return descendant:Clone()
+                        end)
+                        if success and cloned then
+                            table.insert(environmentBackup.skies, cloned)
+                        end
+                        pcall(function()
+                            descendant:Destroy()
+                        end)
+                    end
+                end
+
+                for _, child in ipairs(lighting:GetChildren()) do
+                    if child:IsA("Atmosphere") then
+                        local success, cloned = pcall(function()
+                            return child:Clone()
+                        end)
+                        if success and cloned then
+                            table.insert(environmentBackup.atmospheres, cloned)
+                        end
+                        pcall(function()
+                            child:Destroy()
+                        end)
+                    end
+                end
+            end
+
+            local function createCustomAtmosphereAndSky()
+                local customAtmosphere = Instance.new("Atmosphere")
+
+                pcall(function()
+                    customAtmosphere.Name = "FPSBooster_Atmosphere"
+                    customAtmosphere.Color = grayColor
+
+                    pcall(function()
+                        customAtmosphere.Density = 0.25
+                    end)
+
+                    pcall(function()
+                        customAtmosphere.Offset = 0
+                    end)
+
+                    customAtmosphere.Parent = lightingService
+                end)
+
+                environmentBackup.createdAtmosphere = customAtmosphere
+
+                local customSky = Instance.new("Sky")
+
+                pcall(function()
+                    customSky.Name = "FPSBooster_Sky"
+
+                    pcall(function()
+                        customSky.SkyboxBk = ""
+                    end)
+
+                    pcall(function()
+                        customSky.SkyboxDn = ""
+                    end)
+
+                    pcall(function()
+                        customSky.SkyboxFt = ""
+                    end)
+
+                    pcall(function()
+                        customSky.SkyboxLf = ""
+                    end)
+
+                    pcall(function()
+                        customSky.SkyboxRt = ""
+                    end)
+
+                    pcall(function()
+                        customSky.SkyboxUp = ""
+                    end)
+
+                    customSky.Parent = lightingService
+                end)
+
+                environmentBackup.createdSky = customSky
+            end
+
+            local function disablePostEffects()
+                for _, effect in ipairs(lightingService:GetChildren()) do
+                    if effect ~= nil and effect.ClassName then
+                        local hasEnabledProperty, hasEnabled = pcall(function()
+                            return effect.Enabled ~= nil
+                        end)
+
+                        if hasEnabledProperty and hasEnabled then
+                            local originalEnabled = safeGet(function()
+                                return effect.Enabled
+                            end)
+                            if originalEnabled ~= nil then
+                                environmentBackup.postEffects[effect] = originalEnabled
+                                safeGet(function()
+                                    effect.Enabled = false
+                                end)
+                            end
+                        else
+                            local originalIntensity = safeGet(function()
+                                return effect.Intensity
+                            end)
+                            if originalIntensity ~= nil then
+                                environmentBackup.postEffects[effect] = {
+                                    Intensity = originalIntensity
+                                }
+                                safeGet(function()
+                                    effect.Intensity = 0
+                                end)
+                            end
+                        end
+                    end
+                end
+            end
+
+            local function processVisualInstanceGroup(rootInstance)
+                for _, descendant in ipairs(rootInstance:GetDescendants()) do
+                    if descendant:IsA("ParticleEmitter") then
+                        local success, enabledState = pcall(function()
+                            return descendant.Enabled
+                        end)
+                        if success then
+                            environmentBackup.particles[descendant] = enabledState
+                            pcall(function()
+                                descendant.Enabled = false
+                            end)
+                        end
+
+                        pcall(function()
+                            if descendant.GetAttribute and descendant:GetAttribute("FPSBooster_RateSaved") == nil then
+                                descendant:SetAttribute("FPSBooster_RateSaved", descendant.Rate)
+                            end
+                            descendant.Rate = 0
+                        end)
+                    elseif descendant:IsA("Trail") then
+                        local success, enabledState = pcall(function()
+                            return descendant.Enabled
+                        end)
+                        if success then
+                            environmentBackup.trails[descendant] = enabledState
+                            pcall(function()
+                                descendant.Enabled = false
+                            end)
+                        end
+                    elseif descendant:IsA("Beam") then
+                        local success, enabledState = pcall(function()
+                            return descendant.Enabled
+                        end)
+                        if success then
+                            environmentBackup.beams[descendant] = enabledState
+                            pcall(function()
+                                descendant.Enabled = false
+                            end)
+                        end
+                    elseif descendant:IsA("Sparkles") or descendant:IsA("Fire") or descendant:IsA("Smoke") then
+                        local success, enabledState = pcall(function()
+                            return descendant.Enabled
+                        end)
+                        if success then
+                            environmentBackup.particles[descendant] = enabledState
+                            pcall(function()
+                                descendant.Enabled = false
+                            end)
+                        end
+                    elseif descendant:IsA("PointLight") or descendant:IsA("SurfaceLight") or descendant:IsA("SpotLight") then
+                        local success, enabledState = pcall(function()
+                            return descendant.Enabled
+                        end)
+                        if success then
+                            environmentBackup.lights[descendant] = enabledState
+                            pcall(function()
+                                descendant.Enabled = false
+                            end)
+                        else
+                            local brightnessSuccess, brightnessValue = pcall(function()
+                                return descendant.Brightness
+                            end)
+                            if brightnessSuccess then
+                                environmentBackup.lights[descendant] = {
+                                    Brightness = brightnessValue
+                                }
+                                pcall(function()
+                                    descendant.Brightness = 0
+                                end)
+                            end
+                        end
+                    elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+                        local success, transparencyValue = pcall(function()
+                            return descendant.Transparency
+                        end)
+                        if success then
+                            environmentBackup.decals[descendant] = transparencyValue
+
+                            if removeTextures then
+                                if descendant.Parent then
+                                    table.insert(environmentBackup.removedInstances, descendant)
+                                end
+                                pcall(function()
+                                    descendant:Destroy()
+                                end)
+                            else
+                                pcall(function()
+                                    descendant.Transparency = 1
+                                end)
+                            end
+                        end
+                    elseif descendant:IsA("SurfaceGui") or descendant:IsA("BillboardGui") then
+                        pcall(function()
+                            descendant.Enabled = false
+                        end)
+                    end
+                end
+            end
+
+            local characterVisualConnection = nil
+
+            local function registerPlayerVisualPart(instance)
+                if instance and instance.Parent then
+                    if instance:IsA("BasePart") then
+                        if environmentBackup.playerVisuals[instance] == nil then
+                            environmentBackup.playerVisuals[instance] = {
+                                Transparency = safeGet(function()
+                                    return instance.Transparency
+                                end),
+                                LocalTransparencyModifier = safeGet(function()
+                                    return instance.LocalTransparencyModifier
+                                end)
+                            }
+                        end
+                    elseif instance:IsA("Decal") or instance:IsA("Texture") then
+                        if environmentBackup.playerVisuals[instance] == nil then
+                            environmentBackup.playerVisuals[instance] = {
+                                Transparency = safeGet(function()
+                                    return instance.Transparency
+                                end)
+                            }
+                        end
+                    elseif instance:IsA("Accessory") and environmentBackup.playerVisuals[instance] == nil then
+                        environmentBackup.playerVisuals[instance] = {
+                            Saved = true
+                        }
+                    end
+                end
+            end
+
+            local function hideLocalCharacterVisuals(character)
+                if character then
+                    for _, descendant in ipairs(character:GetDescendants()) do
+                        if descendant:IsA("BasePart") and descendant.Name == "Head" then
+                            registerPlayerVisualPart(descendant)
+                            pcall(function()
+                                descendant.Transparency = 1
+                            end)
+
+                            for _, headChild in ipairs(descendant:GetDescendants()) do
+                                if headChild:IsA("Decal") then
+                                    registerPlayerVisualPart(headChild)
+                                    pcall(function()
+                                        headChild.Transparency = 1
+                                    end)
+                                end
+                            end
+                        end
+
+                        if descendant:IsA("Accessory") then
+                            registerPlayerVisualPart(descendant)
+
+                            for _, accessoryChild in ipairs(descendant:GetDescendants()) do
+                                if accessoryChild:IsA("BasePart") then
+                                    registerPlayerVisualPart(accessoryChild)
+                                    pcall(function()
+                                        accessoryChild.Transparency = 1
+                                    end)
+                                elseif accessoryChild:IsA("Decal") or accessoryChild:IsA("Texture") then
+                                    registerPlayerVisualPart(accessoryChild)
+                                    pcall(function()
+                                        accessoryChild.Transparency = 1
+                                    end)
+                                end
+                            end
+                        end
+
+                        if descendant:IsA("MeshPart") or descendant:IsA("UnionOperation") or descendant:IsA("Part") then
+                            local lowerName = tostring(descendant.Name):lower()
+                            local parentName = ""
+                            if descendant.Parent then
+                                parentName = (tostring(descendant.Parent.Name) or ""):lower()
+                            end
+
+                            if parentName == "head" or lowerName:find("hair") or lowerName:find("hat") then
+                                registerPlayerVisualPart(descendant)
+                                pcall(function()
+                                    descendant.Transparency = 1
+                                end)
+                            end
+                        end
+
+                        if descendant:IsA("Decal") and descendant.Name:lower() == "face" then
+                            registerPlayerVisualPart(descendant)
+                            pcall(function()
+                                descendant.Transparency = 1
+                            end)
+                        end
+                    end
+
+                    if characterVisualConnection then
+                        pcall(function()
+                            characterVisualConnection:Disconnect()
+                        end)
+                    end
+
+                    characterVisualConnection = character.DescendantAdded:Connect(function(newDescendant)
+                        task.wait(0.01)
+
+                        pcall(function()
+                            if newDescendant:IsA("BasePart") and newDescendant.Name == "Head" then
+                                registerPlayerVisualPart(newDescendant)
+                                newDescendant.Transparency = 1
+                            elseif newDescendant:IsA("Accessory") then
+                                registerPlayerVisualPart(newDescendant)
+
+                                for _, accessoryChild in ipairs(newDescendant:GetDescendants()) do
+                                    if accessoryChild:IsA("BasePart") then
+                                        registerPlayerVisualPart(accessoryChild)
+                                        pcall(function()
+                                            accessoryChild.Transparency = 1
+                                        end)
+                                    elseif accessoryChild:IsA("Decal") or accessoryChild:IsA("Texture") then
+                                        registerPlayerVisualPart(accessoryChild)
+                                        pcall(function()
+                                            accessoryChild.Transparency = 1
+                                        end)
+                                    end
+                                end
+                            elseif newDescendant:IsA("Decal") and newDescendant.Name:lower() == "face" then
+                                registerPlayerVisualPart(newDescendant)
+                                newDescendant.Transparency = 1
+                            else
+                                local lowerName = newDescendant.Name:lower()
+                                local parentName = ""
+                                if newDescendant.Parent then
+                                    parentName = (newDescendant.Parent.Name or ""):lower()
+                                end
+
+                                if parentName == "head" or lowerName:find("hair") or lowerName:find("hat") then
+                                    registerPlayerVisualPart(newDescendant)
+                                    pcall(function()
+                                        newDescendant.Transparency = 1
+                                    end)
+                                end
+                            end
+                        end)
+                    end)
+                end
+            end
+
+            local function restoreLocalCharacterVisuals()
+                for instance, originalData in pairs(environmentBackup.playerVisuals) do
+                    if instance and instance.Parent then
+                        pcall(function()
+                            if instance:IsA("BasePart") then
+                                if originalData.Transparency ~= nil then
+                                    instance.Transparency = originalData.Transparency
+                                end
+
+                                if originalData.LocalTransparencyModifier ~= nil then
+                                    pcall(function()
+                                        instance.LocalTransparencyModifier = originalData.LocalTransparencyModifier
+                                    end)
+                                end
+                            elseif (instance:IsA("Decal") or instance:IsA("Texture")) and originalData.Transparency ~= nil then
+                                instance.Transparency = originalData.Transparency
+                            end
+                        end)
+                    end
+                end
+
+                environmentBackup.playerVisuals = {}
+
+                if characterVisualConnection then
+                    pcall(function()
+                        characterVisualConnection:Disconnect()
+                    end)
+                    characterVisualConnection = nil
+                end
+            end
+
+            local worldDescendantAddedConnection = nil
+
+            local function applyFPSBooster()
+                applyGrayLighting()
+                removeExistingSkiesAndAtmospheres()
+                createCustomAtmosphereAndSky()
+                disablePostEffects()
+                processVisualInstanceGroup(workspaceRef)
+
+                if localPlayer and localPlayer.Character then
+                    processVisualInstanceGroup(localPlayer.Character)
+                end
+
+                if hideLocalPlayerHead and localPlayer then
+                    if localPlayer.Character then
+                        hideLocalCharacterVisuals(localPlayer.Character)
+                    end
+
+                    localPlayer.CharacterAdded:Connect(function(newCharacter)
+                        task.wait(0.06)
+                        hideLocalCharacterVisuals(newCharacter)
+                    end)
+                end
+            end
+
+            local function restoreEnvironmentFromFPSBooster()
+                pcall(function()
+                    if environmentBackup.lighting.Ambient then
+                        lightingService.Ambient = environmentBackup.lighting.Ambient
+                    end
+
+                    if environmentBackup.lighting.OutdoorAmbient then
+                        lightingService.OutdoorAmbient = environmentBackup.lighting.OutdoorAmbient
+                    end
+
+                    if environmentBackup.lighting.FogColor then
+                        lightingService.FogColor = environmentBackup.lighting.FogColor
+                    end
+
+                    if environmentBackup.lighting.FogStart then
+                        lightingService.FogStart = environmentBackup.lighting.FogStart
+                    end
+
+                    if environmentBackup.lighting.FogEnd then
+                        lightingService.FogEnd = environmentBackup.lighting.FogEnd
+                    end
+
+                    if environmentBackup.lighting.GlobalShadows ~= nil then
+                        lightingService.GlobalShadows = environmentBackup.lighting.GlobalShadows
+                    end
+
+                    if environmentBackup.lighting.Brightness then
+                        lightingService.Brightness = environmentBackup.lighting.Brightness
+                    end
+
+                    if environmentBackup.lighting.ColorShiftTop then
+                        pcall(function()
+                            lightingService.ColorShift_Top = environmentBackup.lighting.ColorShiftTop
+                        end)
+                    end
+
+                    if environmentBackup.lighting.ColorShiftBottom then
+                        pcall(function()
+                            lightingService.ColorShift_Bottom = environmentBackup.lighting.ColorShiftBottom
+                        end)
+                    end
+
+                    if environmentBackup.lighting.ClockTime then
+                        pcall(function()
+                            lightingService.ClockTime = environmentBackup.lighting.ClockTime
+                        end)
+                    end
+                end)
+
+                for effect, originalData in pairs(environmentBackup.postEffects) do
+                    if effect and effect.Parent then
+                        pcall(function()
+                            if type(originalData) ~= "table" or originalData.Intensity == nil then
+                                effect.Enabled = originalData
+                            else
+                                effect.Intensity = originalData.Intensity
+                            end
+                        end)
+                    end
+                end
+
+                for particle, originalEnabled in pairs(environmentBackup.particles) do
+                    if particle and particle.Parent then
+                        pcall(function()
+                            particle.Enabled = originalEnabled
+                        end)
+
+                        pcall(function()
+                            if particle.GetAttribute and particle:GetAttribute("FPSBooster_RateSaved") then
+                                particle.Rate = particle:GetAttribute("FPSBooster_RateSaved")
+                                particle:SetAttribute("FPSBooster_RateSaved", nil)
+                            end
+                        end)
+                    end
+                end
+
+                for trail, originalEnabled in pairs(environmentBackup.trails) do
+                    if trail and trail.Parent then
+                        pcall(function()
+                            trail.Enabled = originalEnabled
+                        end)
+                    end
+                end
+
+                for beam, originalEnabled in pairs(environmentBackup.beams) do
+                    if beam and beam.Parent then
+                        pcall(function()
+                            beam.Enabled = originalEnabled
+                        end)
+                    end
+                end
+
+                for lightInstance, originalData in pairs(environmentBackup.lights) do
+                    if lightInstance and lightInstance.Parent then
+                        pcall(function()
+                            if type(originalData) ~= "table" or not originalData.Brightness then
+                                lightInstance.Enabled = originalData
+                            else
+                                lightInstance.Brightness = originalData.Brightness
+                            end
+                        end)
+                    end
+                end
+
+                for decal, originalTransparency in pairs(environmentBackup.decals) do
+                    if decal and decal.Parent then
+                        pcall(function()
+                            decal.Transparency = originalTransparency
+                        end)
+                    end
+                end
+
+                if environmentBackup.createdSky and environmentBackup.createdSky.Parent then
+                    pcall(function()
+                        environmentBackup.createdSky:Destroy()
+                    end)
+                end
+
+                if environmentBackup.createdAtmosphere and environmentBackup.createdAtmosphere.Parent then
+                    pcall(function()
+                        environmentBackup.createdAtmosphere:Destroy()
+                    end)
+                end
+
+                for _, savedSky in ipairs(environmentBackup.skies) do
+                    if savedSky and not savedSky.Parent then
+                        pcall(function()
+                            savedSky.Parent = lightingService
+                        end)
+                    end
+                end
+
+                for _, savedAtmosphere in ipairs(environmentBackup.atmospheres) do
+                    if savedAtmosphere and not savedAtmosphere.Parent then
+                        pcall(function()
+                            savedAtmosphere.Parent = lightingService
+                        end)
+                    end
+                end
+
+                restoreLocalCharacterVisuals()
+
+                environmentBackup.postEffects = {}
+                environmentBackup.particles = {}
+                environmentBackup.trails = {}
+                environmentBackup.beams = {}
+                environmentBackup.lights = {}
+                environmentBackup.decals = {}
+                environmentBackup.skies = {}
+                environmentBackup.atmospheres = {}
+                environmentBackup.removedInstances = {}
+
+                if worldDescendantAddedConnection and worldDescendantAddedConnection.Connected then
+                    pcall(function()
+                        worldDescendantAddedConnection:Disconnect()
+                    end)
+                end
+            end
+
+            getgenv().FPSBooster = getgenv().FPSBooster or {}
+            getgenv().FPSBooster.apply = applyFPSBooster
+            getgenv().FPSBooster.restore = restoreEnvironmentFromFPSBooster
+
+            local fpsBoosterConfig = {
+                GRAY_COLOR = grayColor,
+                REMOVE_TEXTURES = removeTextures,
+                HIDE_LOCAL_HEAD = hideLocalPlayerHead
+            }
+
+            getgenv().FPSBooster.config = fpsBoosterConfig
+
+            if autoApplyBooster then
+                applyFPSBooster()
+            end
+
+            if revertEnvironmentOnRestore then
+                worldDescendantAddedConnection = workspaceRef.DescendantAdded:Connect(function(newInstance)
+                    task.wait(0.02)
+
+                    pcall(function()
+                        if newInstance:IsA("Sky") then
+                            pcall(function()
+                                newInstance:Destroy()
+                            end)
+                        elseif newInstance:IsA("Atmosphere") then
+                            pcall(function()
+                                newInstance:Destroy()
+                            end)
+                        elseif newInstance:IsA("ParticleEmitter") or newInstance:IsA("Trail") or newInstance:IsA("Beam") or newInstance:IsA("Sparkles") or newInstance:IsA("Fire") or newInstance:IsA("Smoke") then
+                            pcall(function()
+                                newInstance.Enabled = false
+                            end)
+                        elseif newInstance:IsA("PointLight") or newInstance:IsA("SurfaceLight") or newInstance:IsA("SpotLight") then
+                            pcall(function()
+                                newInstance.Enabled = false
+                            end)
+                        elseif newInstance:IsA("Decal") or newInstance:IsA("Texture") then
+                            if removeTextures then
+                                pcall(function()
+                                    newInstance:Destroy()
+                                end)
+                            else
+                                pcall(function()
+                                    newInstance.Transparency = 1
+                                end)
+                            end
+                        end
+                    end)
+                end)
+            end
+        end)
+
+        uiLibrary:Notify({
+            Title = "Merebennie Hub",
+            Content = "FPS Booster applied (restore with getgenv().FPSBooster.restore()).",
+            Duration = 4
+        })
+    end
+})
+
+optimizationTab:CreateButton({
+    Name = "Slower physics",
+    Callback = function()
+        uiLibrary:Notify({
+            Title = "Merebennie Hub",
+            Content = "Applying slower physics FFlag...",
+            Duration = 2
+        })
+
+        pcall(function()
+            setfflag("PhysicsImprovedCyclicExecutiveThrottleThresholdTenth", "-999999999")
+        end)
+
+        task.wait(0.1)
+
+        uiLibrary:Notify({
+            Title = "Merebennie Hub",
+            Content = "Slower physics flag applied ♥",
+            Duration = 3
+        })
+    end
+})
+
+optimizationTab:CreateButton({
+    Name = "Join our Discord!",
+    Callback = function()
+        local discordLink = "https://discord.gg/invite/2ACBzQkCDs"
+
+        if pcall(function()
+            setclipboard(discordLink)
+        end) then
+            uiLibrary:Notify({
+                Title = "Discord Link",
+                Content = "Link copied to clipboard ♥",
+                Duration = 3
+            })
+        else
+            uiLibrary:Notify({
+                Title = "Copy failed",
+                Content = "Automatic copy failed. Link:\n" .. discordLink,
+                Duration = 6
+            })
+        end
+    end
+})
+
+mainTab:CreateButton({
+    Name = "Instant Twisted (Pair with Aimlock)",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/MerebennieOfficial/ExoticJn/refs/heads/main/Instant%20Twisted"))()
+        end)
+    end
+})
+
+mainTab:CreateButton({
+    Name = "Supa V2 Tech",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/MerebennieOfficial/ExoticJn/refs/heads/main/Supa%20V3"))()
+        end)
+    end
+})
+
+mainTab:CreateToggle({
+    Name = "Professional Resolution",
+    CurrentValue = getgenv().StretchScreen and (getgenv().StretchScreen.isEnabled and getgenv().StretchScreen.isEnabled()) or false,
+    Flag = "ProfessionalResolutionToggle",
+    Callback = function(enabled)
+        if enabled then
+            pcall(function()
+                getgenv().StretchScreen.enable()
+            end)
+
+            uiLibrary:Notify({
+                Title = "Professional Resolution",
+                Content = "Enabled ♥",
+                Duration = 2
+            })
+        else
+            pcall(function()
+                getgenv().StretchScreen.disable()
+            end)
+
+            uiLibrary:Notify({
+                Title = "Professional Resolution",
+                Content = "Disabled ✘",
+                Duration = 2
+            })
+        end
+    end
+})
+
+local playersService = game:GetService("Players")
+local userInputService = game:GetService("UserInputService")
+
+local touchSensitivityConfig = {
+    MIN_SENSITIVITY = 0.1,
+    MAX_SENSITIVITY = 10,
+    DEFAULT_SENSITIVITY = 1,
+    SAVE_FOLDER = "TouchSensitivity",
+    SAVE_FILE = "settings.txt"
+}
+
+local hasFileSystemSupport = pcall(function()
+    local envOk = isfolder and makefolder and isfile and readfile
+    if envOk then
+        envOk = writefile
+    end
+    return envOk
+end)
+
+local currentTouchSensitivity = touchSensitivityConfig.DEFAULT_SENSITIVITY
+
+if hasFileSystemSupport then
+    pcall(function()
+        if not isfolder(touchSensitivityConfig.SAVE_FOLDER) then
+            makefolder(touchSensitivityConfig.SAVE_FOLDER)
+        end
+
+        local settingsPath = touchSensitivityConfig.SAVE_FOLDER .. "/" .. touchSensitivityConfig.SAVE_FILE
+        local savedValue = isfile(settingsPath) and tonumber(readfile(settingsPath))
+
+        if savedValue then
+            currentTouchSensitivity = savedValue
+        end
+    end)
+end
+
+local function saveTouchSensitivity(newValue)
+    if hasFileSystemSupport then
+        pcall(function()
+            writefile(touchSensitivityConfig.SAVE_FOLDER .. "/" .. touchSensitivityConfig.SAVE_FILE, tostring(newValue))
+        end)
+    end
+end
+
+local function setTouchSensitivity(newValue)
+    currentTouchSensitivity = newValue
+    saveTouchSensitivity(newValue)
+end
+
+local function setupTouchSensitivityHooks()
+    local hookApplied = false
+
+    pcall(function()
+        local localPlayer = playersService.LocalPlayer
+        if localPlayer then
+            local playerScripts = localPlayer:FindFirstChild("PlayerScripts")
+            local playerModule = playerScripts and playerScripts:FindFirstChild("PlayerModule")
+
+            if playerModule then
+                local cameraModule = playerModule:FindFirstChild("CameraModule")
+                local cameraInputModule = cameraModule and cameraModule:FindFirstChild("CameraInput")
+
+                if cameraInputModule then
+                    local success, cameraInput = pcall(function()
+                        return require(cameraInputModule)
+                    end)
+
+                    if success and cameraInput and cameraInput.getRotation then
+                        local originalGetRotation = cameraInput.getRotation
+
+                        function cameraInput.getRotation(self, ...)
+                            local rotationDelta = originalGetRotation(self, ...)
+
+                            if userInputService.TouchEnabled then
+                                return rotationDelta * currentTouchSensitivity
+                            end
+
+                            return rotationDelta
+                        end
+
+                        hookApplied = true
+                    end
+                end
+            end
+        end
+    end)
+
+    if not hookApplied then
+        pcall(function()
+            local originalIndex
+            originalIndex = hookmetamethod(game, "__index", function(self, key)
+                if self == userInputService and key == "MouseDelta" and userInputService.TouchEnabled then
+                    return originalIndex(self, key) * currentTouchSensitivity
+                end
+
+                return originalIndex(self, key)
+            end)
+
+            hookApplied = true
+        end)
+    end
+
+    return hookApplied
+end
+
+pcall(function()
+    setupTouchSensitivityHooks()
+end)
+
+pcall(function()
+    if mainTab and type(mainTab.CreateSlider) == "function" then
+        mainTab:CreateSlider({
+            Name = "Touch Sensitivity",
+            Range = {
+                touchSensitivityConfig.MIN_SENSITIVITY,
+                touchSensitivityConfig.MAX_SENSITIVITY
+            },
+            Increment = 0.1,
+            Suffix = "",
+            CurrentValue = currentTouchSensitivity,
+            Flag = "TouchSensitivity",
+            Callback = function(newValue)
+                setTouchSensitivity(newValue)
+
+                if uiLibrary and type(uiLibrary.Notify) == "function" then
+                    pcall(function()
+                        uiLibrary:Notify({
+                            Title = "Touch Sensitivity",
+                            Content = ("Set to %.1f"):format(newValue),
+                            Duration = 2
+                        })
+                    end)
+                end
+            end
+        })
+    end
+end)
+
+if getgenv then
+    getgenv().TouchSensitivity = getgenv().TouchSensitivity or {}
+
+    getgenv().TouchSensitivity.get = function()
+        return currentTouchSensitivity
+    end
+
+    getgenv().TouchSensitivity.set = function(newValue)
+        setTouchSensitivity(newValue)
+    end
+end
+
+mainTab:CreateButton({
+    Name = "Aimlock (Recommend to use unshiftlocked)",
+    Callback = function()
+        pcall(function()
+            local players = game:GetService("Players")
+            local aimRunService = game:GetService("RunService")
+            local aimUserInputService = game:GetService("UserInputService")
+            local tweenService = game:GetService("TweenService")
+            local soundService = game:GetService("SoundService")
+
+            local localPlayer = players.LocalPlayer
+            local camera = workspace.CurrentCamera
+
+            local activeAimSmoothing = 0.45
+            local inactiveAimSmoothing = 0.3
+            local smoothingInterpolation = 0.5
+            local targetPositionSmoothing = 0.7
+            local cameraHeightOffset = 1.6
+            local cameraPitchOffset = math.rad(-5)
+            local characterTurnSpeed = 0.9
+            local cameraSideOffset = 0.8
+            local verticalHeadThreshold = 8
+
+            local aimlockGui = Instance.new("ScreenGui")
+            aimlockGui.Name = "AimlockUI"
+            aimlockGui.ResetOnSpawn = false
+            aimlockGui.Parent = game:GetService("CoreGui")
+
+            local aimlockButton = Instance.new("TextButton")
+            aimlockButton.Name = "AimlockButton"
+            aimlockButton.Parent = aimlockGui
+            aimlockButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            aimlockButton.Position = UDim2.new(0.4, 0, 0.5, 0)
+            aimlockButton.Size = UDim2.new(0, 120, 0, 50)
+            aimlockButton.Font = Enum.Font.Cartoon
+            aimlockButton.Text = "Aimlock"
+            aimlockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            aimlockButton.TextScaled = true
+            aimlockButton.Active = true
+            aimlockButton.AutoButtonColor = false
+
+            local aimlockButtonCorner = Instance.new("UICorner")
+            aimlockButtonCorner.CornerRadius = UDim.new(0, 12)
+            aimlockButtonCorner.Parent = aimlockButton
+
+            local clickSound = Instance.new("Sound")
+            clickSound.SoundId = "rbxassetid://5852470908"
+            clickSound.Volume = 1
+            clickSound.Parent = soundService
+
+            local shrinkTweenInfo = TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            local growTweenInfo = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+            local pressedSize = UDim2.new(0, 110, 0, 46)
+            local defaultSize = aimlockButton.Size
+
+            local isDraggingButton = false
+            local dragInput = nil
+            local dragStartPosition = nil
+            local initialButtonPosition = nil
+
+            aimlockButton.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    isDraggingButton = true
+                    dragStartPosition = input.Position
+                    initialButtonPosition = aimlockButton.Position
+
+                    input.Changed:Connect(function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                            isDraggingButton = false
+                        end
+                    end)
+                end
+            end)
+
+            aimlockButton.InputChanged:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                    dragInput = input
+                end
+            end)
+
+            aimUserInputService.InputChanged:Connect(function(input)
+                if input == dragInput and isDraggingButton then
+                    local delta = input.Position - dragStartPosition
+                    aimlockButton.Position = UDim2.new(
+                        initialButtonPosition.X.Scale,
+                        initialButtonPosition.X.Offset + delta.X,
+                        initialButtonPosition.Y.Scale,
+                        initialButtonPosition.Y.Offset + delta.Y
+                    )
+                end
+            end)
+
+            local introLabel = Instance.new("TextLabel")
+            introLabel.Name = "IntroMadeBy"
+            introLabel.Parent = aimlockGui
+            introLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+            introLabel.Position = UDim2.new(0.5, 0, 0.15, 0)
+            introLabel.Size = UDim2.new(0.6, 0, 0, 80)
+            introLabel.BackgroundTransparency = 1
+            introLabel.Text = "Made by Merebennie"
+            introLabel.Font = Enum.Font.Cartoon
+            introLabel.TextScaled = true
+            introLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            introLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            introLabel.TextStrokeTransparency = 1
+            introLabel.TextTransparency = 1
+            introLabel.ZIndex = 999
+
+            local introShadowLabel = Instance.new("TextLabel")
+            introShadowLabel.Name = "IntroShadow"
+            introShadowLabel.Parent = aimlockGui
+            introShadowLabel.AnchorPoint = introLabel.AnchorPoint
+            introShadowLabel.Position = introLabel.Position + UDim2.new(0, 2, 0, 2)
+            introShadowLabel.Size = introLabel.Size
+            introShadowLabel.BackgroundTransparency = 1
+            introShadowLabel.Text = introLabel.Text
+            introShadowLabel.Font = introLabel.Font
+            introShadowLabel.TextScaled = introLabel.TextScaled
+            introShadowLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+            introShadowLabel.TextTransparency = 1
+            introShadowLabel.TextStrokeTransparency = 1
+            introShadowLabel.ZIndex = introLabel.ZIndex - 1
+
+            local introFadeIn = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            local introFadeOut = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            local introDisplayTime = 1.6
+
+            local introTweenIn = tweenService:Create(introLabel, introFadeIn, {
+                TextTransparency = 0,
+                TextStrokeTransparency = 0
+            })
+
+            local introShadowTweenIn = tweenService:Create(introShadowLabel, introFadeIn, {
+                TextTransparency = 0.3
+            })
+
+            local introTweenOut = tweenService:Create(introLabel, introFadeOut, {
+                TextTransparency = 1,
+                TextStrokeTransparency = 1
+            })
+
+            local introShadowTweenOut = tweenService:Create(introShadowLabel, introFadeOut, {
+                TextTransparency = 1
+            })
+
+            coroutine.wrap(function()
+                introTweenIn:Play()
+                introShadowTweenIn:Play()
+                introTweenIn.Completed:Wait()
+                task.wait(introDisplayTime)
+                introTweenOut:Play()
+                introShadowTweenOut:Play()
+                introTweenOut.Completed:Wait()
+
+                if introLabel and introLabel.Parent then
+                    introLabel:Destroy()
+                end
+
+                if introShadowLabel and introShadowLabel.Parent then
+                    introShadowLabel:Destroy()
+                end
+            end)()
+
+            local aimlockEnabled = false
+            local currentTargetCharacter = nil
+            local currentSmoothing = inactiveAimSmoothing
+            local smoothedTargetPosition = nil
+
+            local function getAllValidTargets()
+                local targetCharacters = {}
+
+                for _, player in pairs(players:GetPlayers()) do
+                    if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                        table.insert(targetCharacters, player.Character)
+                    end
+                end
+
+                for _, instance in pairs(workspace:GetDescendants()) do
+                    if instance:IsA("Model") and not players:GetPlayerFromCharacter(instance) then
+                        local humanoid = instance:FindFirstChildOfClass("Humanoid")
+                        if humanoid and humanoid.Health > 0 then
+                            local targetBasePart
+
+                            if instance:FindFirstChild("HumanoidRootPart") and instance.HumanoidRootPart:IsA("BasePart") then
+                                targetBasePart = instance.HumanoidRootPart
+                            elseif instance:FindFirstChild("Head") and instance.Head:IsA("BasePart") then
+                                targetBasePart = instance.Head
+                            end
+
+                            if targetBasePart then
+                                table.insert(targetCharacters, instance)
+                            end
+                        end
+                    end
+                end
+
+                return targetCharacters
+            end
+
+            local function getClosestCharacterPartToPosition(character, referencePosition)
+                if not (character and referencePosition) then
+                    return nil
+                end
+
+                local closestDistance = math.huge
+                local closestPart = nil
+
+                local preferredNames = {
+                    "Head",
+                    "UpperTorso",
+                    "LowerTorso",
+                    "HumanoidRootPart",
+                    "LeftUpperArm",
+                    "RightUpperArm",
+                    "LeftLowerArm",
+                    "RightLowerArm",
+                    "LeftUpperLeg",
+                    "RightUpperLeg",
+                    "LeftLowerLeg",
+                    "RightLowerLeg",
+                    "LeftHand",
+                    "RightHand",
+                    "LeftFoot",
+                    "RightFoot"
+                }
+
+                for _, partName in ipairs(preferredNames) do
+                    local part = character:FindFirstChild(partName)
+                    if part and part:IsA("BasePart") then
+                        local distance = (part.Position - referencePosition).Magnitude
+                        if distance < closestDistance then
+                            closestDistance = distance
+                            closestPart = part
+                        end
+                    end
+                end
+
+                if not closestPart then
+                    for _, descendant in pairs(character:GetDescendants()) do
+                        if descendant:IsA("BasePart") then
+                            local distance = (descendant.Position - referencePosition).Magnitude
+                            if distance < closestDistance then
+                                closestDistance = distance
+                                closestPart = descendant
+                            end
+                        end
+                    end
+                end
+
+                return closestPart
+            end
+
+            local function getNearestTargetCharacter()
+                if not (localPlayer and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")) then
+                    return nil
+                end
+
+                local playerPosition = localPlayer.Character.HumanoidRootPart.Position
+                local candidates = getAllValidTargets()
+                local closestDistance = math.huge
+                local closestCharacter = nil
+
+                for _, character in ipairs(candidates) do
+                    local targetPart = character:FindFirstChild("Head") or character:FindFirstChild("HumanoidRootPart")
+                    if targetPart and targetPart:IsA("BasePart") then
+                        local distance = (targetPart.Position - playerPosition).Magnitude
+                        if distance < closestDistance then
+                            closestDistance = distance
+                            closestCharacter = character
+                        end
+                    end
+                end
+
+                return closestCharacter
+            end
+
+            local function isHumanoidInvalid(humanoid)
+                if not humanoid then
+                    return true
+                end
+
+                if humanoid.Health <= 0 then
+                    return true
+                end
+
+                if humanoid.PlatformStand or humanoid.Sit then
+                    return true
+                end
+
+                local success, state = pcall(function()
+                    return humanoid:GetState()
+                end)
+
+                if success and state then
+                    if state == Enum.HumanoidStateType.FallingDown then
+                        return true
+                    end
+
+                    local physicsEnumSuccess = pcall(function()
+                        return Enum.HumanoidStateType.Physics
+                    end)
+
+                    if physicsEnumSuccess then
+                        local stateSuccess, physicsState = pcall(function()
+                            return humanoid:GetState()
+                        end)
+
+                        if stateSuccess and physicsState == Enum.HumanoidStateType.Physics then
+                            return true
+                        end
+                    end
+                end
+
+                local character = humanoid.Parent
+                if character then
+                    local ragdollFlag = character:FindFirstChild("Ragdoll") or character:FindFirstChild("Ragdolled")
+                    if ragdollFlag and ragdollFlag:IsA("BoolValue") and ragdollFlag.Value == true then
+                        return true
+                    end
+                end
+
+                return false
+            end
+
+            aimRunService.RenderStepped:Connect(function()
+                currentSmoothing = currentSmoothing + ((aimlockEnabled and activeAimSmoothing or inactiveAimSmoothing) - currentSmoothing) * smoothingInterpolation
+
+                if aimlockEnabled then
+                    if not currentTargetCharacter
+                        or not currentTargetCharacter.Parent
+                        or not currentTargetCharacter:FindFirstChildOfClass("Humanoid")
+                        or currentTargetCharacter:FindFirstChildOfClass("Humanoid").Health <= 0 then
+
+                        currentTargetCharacter = getNearestTargetCharacter()
+
+                        local localCharacter = localPlayer and localPlayer.Character
+                        if currentTargetCharacter and localCharacter and localCharacter:FindFirstChild("HumanoidRootPart") then
+                            local targetPart = getClosestCharacterPartToPosition(currentTargetCharacter, localCharacter.HumanoidRootPart.Position)
+                            if targetPart then
+                                smoothedTargetPosition = targetPart.Position
+                            end
+                        end
+                    end
+
+                    if currentTargetCharacter and localPlayer and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local playerRoot = localPlayer.Character.HumanoidRootPart
+                        local targetHead = currentTargetCharacter:FindFirstChild("Head")
+                        local targetRoot = currentTargetCharacter:FindFirstChild("HumanoidRootPart")
+
+                        local targetHeight = nil
+
+                        if targetHead and targetHead:IsA("BasePart") then
+                            targetHeight = targetHead.Position.Y
+                        elseif targetRoot and targetRoot:IsA("BasePart") then
+                            targetHeight = targetRoot.Position.Y
+                        end
+
+                        local preferHeadTarget = false
+
+                        if targetHeight and verticalHeadThreshold <= targetHeight - playerRoot.Position.Y then
+                            preferHeadTarget = targetHead and targetHead:IsA("BasePart") and true or false
+                        end
+
+                        local targetPosition
+
+                        if preferHeadTarget then
+                            targetPosition = targetHead.Position
+                        else
+                            local bestPart = getClosestCharacterPartToPosition(currentTargetCharacter, playerRoot.Position)
+
+                            if bestPart and bestPart:IsA("BasePart") then
+                                targetPosition = bestPart.Position
+                            else
+                                if targetRoot and targetRoot:IsA("BasePart") then
+                                    targetPosition = targetRoot.Position
+                                elseif targetHead and targetHead:IsA("BasePart") then
+                                    targetPosition = targetHead.Position
+                                end
+                            end
+                        end
+
+                        if targetPosition then
+                            if smoothedTargetPosition then
+                                smoothedTargetPosition = smoothedTargetPosition + (targetPosition - smoothedTargetPosition) * targetPositionSmoothing
+                            else
+                                smoothedTargetPosition = targetPosition
+                            end
+
+                            local cameraOffsetPosition = smoothedTargetPosition + camera.CFrame.RightVector * cameraSideOffset
+                            local cameraCurrentPosition = camera.CFrame.Position
+                            local elevatedCameraPosition = CFrame.new(cameraCurrentPosition) * CFrame.new(0, cameraHeightOffset, 0)
+
+                            local lookCFrame = CFrame.lookAt(elevatedCameraPosition.Position, cameraOffsetPosition) * CFrame.Angles(cameraPitchOffset, 0, 0)
+                            camera.CFrame = camera.CFrame:Lerp(lookCFrame, currentSmoothing)
+
+                            local localCharacter = localPlayer.Character
+                            local humanoid = localCharacter and localCharacter:FindFirstChildOfClass("Humanoid")
+
+                            if localCharacter
+                                and playerRoot
+                                and cameraOffsetPosition
+                                and humanoid
+                                and not isHumanoidInvalid(humanoid) then
+
+                                local direction = cameraOffsetPosition - playerRoot.Position
+                                local flatDirection = Vector3.new(direction.X, 0, direction.Z)
+
+                                if flatDirection.Magnitude > 0.001 then
+                                    local targetCharacterCFrame = CFrame.lookAt(playerRoot.Position, playerRoot.Position + flatDirection)
+                                    playerRoot.CFrame = playerRoot.CFrame:Lerp(targetCharacterCFrame, characterTurnSpeed)
+                                end
+                            end
+                        end
+                    end
+                else
+                    currentTargetCharacter = nil
+                    smoothedTargetPosition = nil
+                end
+            end)
+
+            aimlockButton.MouseButton1Click:Connect(function()
+                soundService:PlayLocalSound(clickSound)
+
+                local shrinkTween = tweenService:Create(aimlockButton, shrinkTweenInfo, {
+                    Size = pressedSize
+                })
+
+                local growTween = tweenService:Create(aimlockButton, growTweenInfo, {
+                    Size = defaultSize
+                })
+
+                shrinkTween:Play()
+                shrinkTween.Completed:Connect(function()
+                    growTween:Play()
+                end)
+
+                aimlockEnabled = not aimlockEnabled
+
+                if aimlockEnabled then
+                    currentTargetCharacter = getNearestTargetCharacter()
+
+                    local localCharacter = localPlayer and localPlayer.Character
+                    if currentTargetCharacter and localCharacter and localCharacter:FindFirstChild("HumanoidRootPart") then
+                        local targetPart = getClosestCharacterPartToPosition(currentTargetCharacter, localCharacter.HumanoidRootPart.Position)
+                        if targetPart then
+                            smoothedTargetPosition = targetPart.Position
+                        end
+                    end
+
+                    aimlockButton.Text = "Aimlock:On"
+                else
+                    currentTargetCharacter = nil
+                    smoothedTargetPosition = nil
+                    aimlockButton.Text = "Aimlock"
+                end
+            end)
+
+            aimlockGui.ResetOnSpawn = false
+        end)
+    end
+})
+
+uiLibrary:Notify({
+    Title = "Merebennie Hub",
+    Content = "Loaded Successfully! 💙",
+    Duration = 4
+})
